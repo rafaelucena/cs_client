@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use App\Traits\CommandTrait;
 use GuzzleHttp\Client;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -10,6 +11,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class AddItemCommand extends Command
 {
+    use CommandTrait;
+
     protected static $defaultName = 'api:add';
 
     protected function configure()
@@ -17,14 +20,18 @@ class AddItemCommand extends Command
         $this->setDescription('Add item to the API server');
 
         // Arguments
-        $this->addArgument('amount', InputArgument::REQUIRED, 'The amount of the item in stock.');
         $this->addArgument('name', InputArgument::REQUIRED, 'The name of the item to be added.');
+        $this->addArgument('amount', InputArgument::REQUIRED, 'The amount of the item in stock.');
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $client = new Client();
-        $response = $client->request('POST', 'http://127.0.0.1:8000/api/item', [
+        $response = $client->request('POST', $this->buildUrl($input), [
             'json' => [
                 'name' => $input->getArgument('name'),
                 'amount' => $input->getArgument('amount'),
