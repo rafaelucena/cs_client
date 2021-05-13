@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use App\Traits\CommandTrait;
 use GuzzleHttp\Client;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -10,6 +11,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ListItemsCommand extends Command
 {
+    use CommandTrait;
+
     protected static $defaultName = 'api:list';
 
     protected function configure()
@@ -20,19 +23,14 @@ class ListItemsCommand extends Command
         $this->addOption('more', null, InputOption::VALUE_OPTIONAL, 'To define a number where the stock should be bigger than it.');
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $query = [];
-        if (empty($input->getOption('stock')) === false) {
-            $query['has_stock'] = $input->getOption('stock');
-        }
-        if (empty($input->getOption('more')) === false) {
-            $query['has_more_than'] = $input->getOption('more');
-        }
-        $builtQuery = http_build_query($query);
-
         $client = new Client();
-        $response = $client->request('GET', 'http://127.0.0.1:8000/api/item?' . $builtQuery);
+        $response = $client->request('GET', $this->buildUrl($input));
         $content = json_decode($response->getBody(), true);
 
         if ($content['success'] === true) {
